@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import QuoteGenerator from './components/QuoteGenerator';
 import VTuberList from './components/VTuberList';
 import FavoriteQuotes from './components/FavoriteQuotes';
@@ -11,26 +11,36 @@ interface Quote {
 }
 
 function App() {
-  const [favorites, setFavorites] = useState<Quote[]>([]);
-
-  useEffect(() => {
+  const [favorites, setFavorites] = useState<Quote[]>(() => {
     const savedFavorites = localStorage.getItem('favorites');
     if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites));
+      return JSON.parse(savedFavorites);
     }
-  }, []);
+    return [];
+  });
 
   useEffect(() => {
+    console.log('Saving favorites to localStorage:', favorites);
     localStorage.setItem('favorites', JSON.stringify(favorites));
   }, [favorites]);
 
-  const addToFavorites = (quote: Quote) => {
-    setFavorites(prevFavorites => [...prevFavorites, quote]);
-  };
+  const addToFavorites = useCallback((quote: Quote) => {
+    console.log('Adding to favorites:', quote);
+    setFavorites(prevFavorites => {
+      const newFavorites = [...prevFavorites, quote];
+      console.log('New favorites after adding:', newFavorites);
+      return newFavorites;
+    });
+  }, []);
 
-  const removeFromFavorites = (id: string) => {
-    setFavorites(prevFavorites => prevFavorites.filter(fav => fav.id !== id));
-  };
+  const removeFromFavorites = useCallback((id: string) => {
+    console.log('Removing from favorites, id:', id);
+    setFavorites(prevFavorites => {
+      const newFavorites = prevFavorites.filter(fav => fav.id !== id);
+      console.log('New favorites after removing:', newFavorites);
+      return newFavorites;
+    });
+  }, []);
 
   return (
     <div className="min-h-screen hololive-bg py-6 px-4 sm:px-6 lg:px-8">
